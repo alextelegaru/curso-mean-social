@@ -1,0 +1,18 @@
+{
+  "name": "curso-mean-social",
+  "version": "1.0.0",
+  "description": "Backend para el proyecto del curso desarrollar red social",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alex Tiberiu Telegaru",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  },
+  "dependencies": {
+    "mongoose-pagination": "^1.0.0"
+  }
+}

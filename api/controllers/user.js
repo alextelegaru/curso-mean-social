@@ -10,6 +10,9 @@ var path = require('path');
 var User = require('../models/user.js');
 
 var Follow = require('../models/follow');
+
+var Publication = require('../models/publication');
+
 const follow = require('../models/follow');
 
 
@@ -414,7 +417,8 @@ async function getCounters(req, res) {
 
         return res.status(200).send({
             following: value.following,
-            followed: value.followed
+            followed: value.followed,
+            publications: value.publications
         });
     })
 }
@@ -445,10 +449,22 @@ async function getCountFollow(user_id) {
         })
     })
 
+    var publications = await new Promise((resolve, reject) => {
+
+        Publication.countDocuments({ "user": user_id }).exec((err, publications) => {
+            if (err) {
+                reject(err)  // calling `reject` will cause the promise to fail with or without the error passed as an argument
+                return        // and we don't want to go any further
+            }
+            resolve(publications)
+        })
+    })
+
 
     return {
         following: following,
-        followed: followed
+        followed: followed,
+        publications: publications
     }
 
 

@@ -8,6 +8,7 @@ var Message = require('../models/message.js');
 var Follow = require('../models/follow.js');
 var User = require('../models/user.js');
 const message = require('../models/message.js');
+const user = require('./user.js');
 
 
 function probando(req, res){
@@ -26,6 +27,7 @@ function saveMessage(req, res){
     message.emitter = req.user.sub;
     message.receiver = params.receiver;
     message.text = params.text;
+    message.viewed= 'false';
     message.created_at = moment().unix();
 
     message.save((err,messageStored) => {
@@ -108,8 +110,39 @@ return res.status(200).send({
 
 
 
+function getUnviewedMessages(req, res){
+    var userId = req.user.sub;
+
+    Message.countDocuments({receiver:userId, viewed:'false'}).exec((err, count) =>{
+        if(err) return res.status(500).send({message: 'Error en la peticion'});
+        return res.status(200).send({
+            'unviewed': count
+        });
+
+    });
 
 
+
+}
+
+
+
+
+
+
+function setViewedMessages(req, res){
+    var userId = req.user.sub;
+
+    Message.update({receiver:userId, viewed:'false'}, {viewed:'true'}, {"multi":true}, (err,messagesUpdated)=>{
+        if(err) return res.status(500).send({message: 'Error en la peticion'});
+        return res.status(200).send({
+            messages: messagesUpdated
+        });
+    });
+
+
+
+}
 
 
 
@@ -118,5 +151,7 @@ module.exports={
     probando,
     saveMessage,
     getReceivedMessages,
-    getEmittedMessages
+    getEmittedMessages,
+    getUnviewedMessages,
+    setViewedMessages
 }

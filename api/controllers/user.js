@@ -14,6 +14,7 @@ var Follow = require('../models/follow');
 var Publication = require('../models/publication');
 
 const follow = require('../models/follow');
+const user = require('../models/user.js');
 
 
 function home(req, res) {
@@ -550,21 +551,53 @@ function updateUser(req, res) {
 
 
     bcrypt.hash(update.password, null, null, (err, hash) => {
-        update.password = hash;
 
 
+        if (update.password != null) {
+            update.password = hash;
+        }
 
         if (userId != req.user.sub) {
             return res.status(500).send({ message: 'no tienes permiso para cambiar los datos' });
         }
 
-        User.findByIdAndUpdate(userId, update, { new: true }, (err, userUpdated) => {
-            if (err) return res.status(500).send({ message: 'error en la peticion' });
-            if (!userUpdated) return res.status(404).send({ message: 'no se ha podido actualizar el usuario' });
-            userUpdated.password = null;
-            delete userUpdated.password // no la borra asi que a null mejor
-            return res.status(200).send({ user: userUpdated });
+
+        User.find({ $or: [
+            {email: update.email.toLowerCase()},
+            {nick: update.nick.toLowerCase()}
+        ]}).exec((err, users) => {
+            var  user_isset = false;
+            users.forEach((user) =>{
+                if(user && user._id != userId) user_isset=true;
+            });
+
+
+
+
+
+            if(user_isset) return  res.status(404).send({message: 'Los datos ya estan en uso.'})
+        
+            User.findByIdAndUpdate(userId, update, { new: true }, (err, userUpdated) => {
+                if (err) return res.status(500).send({ message: 'error en la peticion' });
+              
+                if (!userUpdated) return res.status(404).send({ message: 'no se ha podido actualizar el usuario' });
+                
+                userUpdated.password = null;
+                delete userUpdated.password // no la borra asi que a null mejor
+                return res.status(200).send({ user: userUpdated });
+            });
+        
+        
         });
+
+
+
+
+
+
+
+
+     
 
 
 
